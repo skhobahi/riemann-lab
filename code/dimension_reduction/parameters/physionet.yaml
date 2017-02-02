@@ -1,0 +1,12 @@
+dataparams:
+    path: '/research/vibs/Pedro/datasets/motorimagery/Physionet/eegmmidb/'
+    session: 1
+    tparams: [1., 2.]
+    fparams: [8.0,35.0]  
+    task: 4         
+       
+analysisparams:
+    classes: [2,3]
+    crossvalidation:
+        nfolds: 10
+            

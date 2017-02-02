@@ -1,0 +1,18 @@
+imports:
+    pyriemann.estimation:
+        - Covariances
+    pyriemann.classification:
+        - MDM
+    utilities.dim_reduction:
+        - RDR
+
+pipeline:
+    - Covariances:
+        estimator: 'oas'
+    - RDR:
+        n_components: 8
+        method: 'harandi-uns'
+    - MDM:
+        metric: 'riemann'
+
+label: 'hrd-uns (8) + mdm'

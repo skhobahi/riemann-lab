@@ -1,0 +1,19 @@
+imports:
+    pyriemann.estimation:
+        - Covariances
+    pyriemann.classification:
+        - MDM
+    utilities.dim_reduction:
+        - RDR
+
+pipeline:
+    - Covariances:
+        estimator: 'oas'
+    - RDR:
+        n_components: 20
+        method: 'minmax'
+        alpha: 1.0
+    - MDM:
+        metric: 'riemann'
+
+label: 'minmax (20) + mdm'

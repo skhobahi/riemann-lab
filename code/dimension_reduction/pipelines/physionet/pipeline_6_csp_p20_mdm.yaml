@@ -1,0 +1,18 @@
+imports:
+    pyriemann.estimation:
+        - Covariances
+    pyriemann.classification:
+        - MDM
+    pyriemann.spatialfilters:
+        - CSP
+
+pipeline:
+    - Covariances:
+        estimator: 'oas'
+    - CSP:
+        nfilter: 20
+        log: False
+    - MDM:
+        metric: 'riemann'
+
+label: 'csp (20) + mdm'

@@ -1,0 +1,14 @@
+imports:
+    pyriemann.estimation:
+        - Covariances
+    pyriemann.classification:
+        - MDM
+
+pipeline:
+    - Covariances:
+        estimator: 'oas'   
+    - MDM:
+        metric: 'riemann'   
+
+label: 'mdm'              
+             

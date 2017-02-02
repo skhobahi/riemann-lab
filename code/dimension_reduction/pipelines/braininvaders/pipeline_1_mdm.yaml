@@ -1,0 +1,15 @@
+imports:
+    pyriemann.estimation:
+        - ERPCovariances
+    pyriemann.classification:
+        - MDM
+
+pipeline:
+    - ERPCovariances:
+        estimator: 'oas'
+        classes: [2]      
+    - MDM:
+        metric: 'riemann'   
+
+label: 'mdm'              
+             

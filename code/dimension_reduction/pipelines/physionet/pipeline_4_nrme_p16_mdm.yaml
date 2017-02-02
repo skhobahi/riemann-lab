@@ -1,0 +1,18 @@
+imports:
+    pyriemann.estimation:
+        - Covariances
+    pyriemann.classification:
+        - MDM
+    utilities.dim_reduction:
+        - RDR
+
+pipeline:
+    - Covariances:
+        estimator: 'oas'
+    - RDR:
+        n_components: 16
+        method: 'nrme'
+    - MDM:
+        metric: 'riemann'
+
+label: 'nrme (16) + mdm'

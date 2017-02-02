@@ -1,0 +1,12 @@
+dataparams:
+    path: '/research/vibs/Pedro/datasets/erp/BrainInvaders/'
+    session: 1
+    tparams: [0, 1]
+    fparams: [1.0, 20.0]  
+    task: 1        
+       
+analysisparams:
+    classes: [1,2]
+    crossvalidation:
+        nfolds: 10
+            
