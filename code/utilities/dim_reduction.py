@@ -19,6 +19,8 @@ from pymanopt.manifolds import Grassmann
 from pymanopt.solvers import ConjugateGradient, SteepestDescent, TrustRegions
 from functools import partial
 
+from random import randrange
+
 class RDR(BaseEstimator, TransformerMixin):    
     '''Riemannian Dimension Reduction
     
@@ -39,7 +41,8 @@ class RDR(BaseEstimator, TransformerMixin):
             - harandi-uns
             - harandi-sup (set nw and nb)              
             - minmax (set alpha)      
-            - covpca   
+            - covpca 
+            - bootstrap (set nmeans and npoints)
     '''
     
     def __init__(self, n_components=6, method='harandi-uns', params={}):          
@@ -62,7 +65,8 @@ class RDR(BaseEstimator, TransformerMixin):
                    'harandi-uns' : dim_reduction_harandiuns,
                    'harandi-sup' : dim_reduction_harandisup,
                    'minmax'      : dim_reduction_minmax,    
-                   'covpca'      : dim_reduction_covpca
+                   'covpca'      : dim_reduction_covpca,
+                   'bootstrap'   : dim_reduction_bootstrap_means
                   }    
                                    
         self.projector_ = methods[self.method](X=X,
@@ -100,7 +104,25 @@ def dim_reduction_nrme_cgd(X, P, labels, params):
 
     W = v[:, :P]    
 
-    return W         
+    return W       
+
+def dim_reduction_bootstrap_means(X, P, labels, params):
+
+    nc = X.shape[1] 
+    K  = X.shape[0]
+    
+    nmeans  = params['nmeans']
+    npoints = params['npoints']
+
+    # calculate the means
+    Xm = np.zeros((nmeans,nc,nc))
+    for n,sn in enumerate(range(nmeans)):
+        selectmeans = [randrange(0, K) for _ in range(npoints)]
+        Xm[n] = mean_riemann(X[selectmeans])        
+           
+    W = dim_reduction_nrme_cgd(Xm, P, labels, params)
+
+    return W     
 
 def dim_reduction_harandiuns(X, P, labels, params):
     return _reduction_landmarks_unsup(X, P)

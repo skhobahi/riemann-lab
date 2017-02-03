@@ -17,22 +17,6 @@ paramspath = './parameters/physionet.yaml'
 pipesdir   = './pipelines/physionet/' 
 resultsdir = './results/physionet/' 
 
-#%%
-
 nsubjects = 109
 for subject in range(1,nsubjects+1):
-    analyse_subject(subject, paramspath, pipesdir, resultsdir)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+   analyse_subject(subject, paramspath, pipesdir, resultsdir)

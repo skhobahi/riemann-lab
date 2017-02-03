@@ -41,8 +41,9 @@ def create_mmx(P):
              "        estimator: 'oas'\n",        
              "    - RDR:\n",
              ncomponents,
-             "        method: 'minmax'\n",             
-             "        alpha: 1.0\n" ,             
+             "        method: 'minmax'\n",
+             "        params:\n",             
+             "          alpha: 1.0\n" ,             
              "    - MDM:\n",
              "        metric: 'riemann'\n\n",         
              label
