@@ -12,8 +12,11 @@ pipeline:
         classes: [2]
     - RDR:
         n_components: 24
-        method: 'covpca'
+        method: 'bootstrap'
+        params:
+          nmeans: 50
+          npoints: 5
     - MDM:
         metric: 'riemann'
 
-label: 'rdr-covpca (24) + mdm'
+label: 'bootstrap (24) + mdm'
