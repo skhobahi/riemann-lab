@@ -10,9 +10,9 @@ pipeline:
     - Covariances:
         estimator: 'oas'
     - RDR:
-        n_components: 24
-        method: 'harandi-uns'
+        n_components: 36
+        method: 'covpca'
     - MDM:
         metric: 'riemann'
 
-label: 'hrd-uns (24) + mdm'
+label: 'covpca (36) + mdm'

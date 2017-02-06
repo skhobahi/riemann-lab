@@ -11,8 +11,8 @@ pipeline:
         estimator: 'oas'
     - RDR:
         n_components: 24
-        method: 'harandi-uns'
+        method: 'covpca'
     - MDM:
         metric: 'riemann'
 
-label: 'hrd-uns (24) + mdm'
+label: 'covpca (24) + mdm'

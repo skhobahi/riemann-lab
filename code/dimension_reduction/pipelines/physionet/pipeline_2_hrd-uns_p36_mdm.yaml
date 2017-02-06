@@ -10,12 +10,9 @@ pipeline:
     - Covariances:
         estimator: 'oas'
     - RDR:
-        n_components: 24
-        method: 'bootstrap'
-        params:
-          nmeans: 50
-          npoints: 5
+        n_components: 36
+        method: 'harandi-uns'
     - MDM:
         metric: 'riemann'
 
-label: 'bootstrap (24) + mdm'
+label: 'hrd-uns (36) + mdm'

@@ -11,7 +11,7 @@ from sklearn.decomposition import PCA
 from sklearn.base import BaseEstimator, TransformerMixin
 
 from pyriemann.utils.base     import powm, sqrtm, invsqrtm, logm
-from pyriemann.utils.distance import distance_riemann, distance_euclid, distance_logeuclid
+from pyriemann.utils.distance import distance_riemann, distance_logeuclid
 from pyriemann.utils.mean     import mean_riemann, mean_euclid
 
 from pymanopt import Problem
@@ -39,10 +39,10 @@ class RDR(BaseEstimator, TransformerMixin):
         solving the optimization problem. The options are:        
             - nrme                       
             - harandi-uns
-            - harandi-sup (set nw and nb)              
+            - harandi-sup (set nw, nb, approx)              
             - minmax (set alpha)      
             - covpca 
-            - bootstrap (set nmeans and npoints)
+            - bootstrap (set nmeans, npoints)
     '''
     
     def __init__(self, n_components=6, method='harandi-uns', params={}):          
@@ -320,8 +320,9 @@ def dim_reduction_harandisup(X, P, labels, params):
         Nt,Nc,Nc = covs.shape
         D = np.zeros((Nt,Nt))
         for i,covi in enumerate(covs):
-            for j,covj in enumerate(covs):
-                D[i,j] = distance_logeuclid(covi, covj)
+            for j,covj in enumerate(covs[(i+1):]):
+                D[i,j] = distance_riemann(covi, covj)
+                D[j,i] = D[i,j]
                 
         return D
         
@@ -388,7 +389,13 @@ def dim_reduction_harandisup(X, P, labels, params):
     def log(X):
         w,v = np.linalg.eig(X)
         w_ = np.diag(np.log(w))
-        return np.dot(v, np.dot(w_, v.T))    
+        return np.dot(v, np.dot(w_, v.T))  
+    
+    def log_trials(X):
+        logX = np.zeros(X.shape)
+        for i,Xi in enumerate(X):
+            logX[i] = log(Xi)
+        return logX    
     
     def egrad_dist_riemann(W, X, Y):           
     
@@ -425,14 +432,38 @@ def dim_reduction_harandisup(X, P, labels, params):
                     Xj_ = np.dot(W.T, np.dot(Xj, W))
                     c   = c + A[i,j]*distance_riemann(Xi_, Xj_)**2
         return c                
+    
+    def F(W,A,logX):
+        Nt,Nc,Nc = logX.shape
+        Fw  = np.zeros((Nc,Nc))
+        WWt = np.dot(W,W.T)
+        for i,logXi in enumerate(logX):
+            for j,logXj in enumerate(logX):
+                dij = logXi - logXj
+                Fw  = Fw + A[i,j]*np.dot(dij, np.dot(WWt, dij))
+        return Fw    
 
     nw = params['nw']
-    nb = params['nb']        
-                
-    A     = make_affinitymatrix(X, labels, nw, nb)
-    cost  = partial(cost_,  X=X, A=A)
-    egrad = partial(egrad_, X=X, A=A)    
-    W     = solve_manopt(X, P, cost, egrad)    
+    nb = params['nb']
+    approx = params['approx']        
+
+    A = make_affinitymatrix(X, labels, nw, nb)
+    
+    # use logeuc approximation for supervised DR via eigendecomp
+    if approx:
+        logX = log_trials(X)
+        Nt,Nc,Nc = X.shape
+        W = np.eye(Nc,P)
+        for k in range(5):
+            Fw  = F(W,A,logX)
+            w,v = np.linalg.eig(Fw)
+            W   = v[:,:P]        
+        
+    # solve supervised DR via manifold optimization        
+    else:                
+        cost  = partial(cost_,  X=X, A=A)
+        egrad = partial(egrad_, X=X, A=A)    
+        W     = solve_manopt(X, P, cost, egrad)    
     
     return W    
     

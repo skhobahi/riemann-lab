@@ -11,7 +11,11 @@ pipeline:
         estimator: 'oas'
     - RDR:
         n_components: 24
-        method: 'harandi-uns'
+        method: 'harandi-sup'
+        params:
+          nw: 22
+          nb: 13
+          approx: False
     - MDM:
         metric: 'riemann'
 
