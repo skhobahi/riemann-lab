@@ -43,16 +43,16 @@ for subj in range(1,nsubjects+1):
 results = pd.DataFrame(data=acc, columns=['AUC'])
 results['Method']  = method
 results['Subject'] = subject       
-methods = method[:4]
+methods = method[:5]
        
 #%%
 
 import statsmodels.api as sm
 from sklearn import linear_model
 
-pairs = [[0,1], [0,2], [0,3]]
+pairs = [[0,1], [0,2], [0,4], [0,3]]
 
-methodnames = ['MDM','HRD + MDM','PCA + MDM','bm-RME + MDM']
+methodnames = ['MDM','HRD + MDM','PCA + MDM','bmRME + MDM','RME + MDM']
 
 plt.figure(figsize=(8,8))
 plt.subplots_adjust(wspace=0.025, hspace=0.025)
@@ -66,10 +66,8 @@ for pair in pairs:
     x = results_pair[results_pair.Method == method_pair[0]].AUC
     y = results_pair[results_pair.Method == method_pair[1]].AUC                    
 
-    if nplot < 3:
-        ax = plt.subplot(2,2,nplot)                                  
-    else: 
-        ax = plt.subplot(2,2,nplot+1) 
+    ax = plt.subplot(2,2,nplot)     
+    plt.fill_between([0,1],[0,1], color="gray", linewidth=0.0, alpha=0.1)                                                               
 
     for px,py in zip(x,y):
         plt.scatter(px,py,color='black')
@@ -78,11 +76,11 @@ for pair in pairs:
     plt.ylim(0,1)  
     
     plt.yticks([0, 0.25, 0.50, 0.75, 1.0], ['', '', '', '', ''])
-    if ((nplot-1) % 2) == 0:
+    if nplot in [1, 3]:
         plt.yticks([0, 0.25, 0.50, 0.75, 1.0], ['', '0.25', '', '0.75', ''])
 
     plt.xticks([0, 0.25, 0.50, 0.75, 1.0], ['', '', '', '', ''])
-    if nplot in [1, 3]:
+    if nplot in [3, 4]:
         plt.xticks([0, 0.25, 0.50, 0.75, 1.0], ['', '0.25', '', '0.75', ''])
                             
     lm = linear_model.LinearRegression(fit_intercept=False)
@@ -92,14 +90,14 @@ for pair in pairs:
     plt.text(0.20,0.89,r'$\hat{m} = ' + '{:.4f}'.format(m) + '$', 
              color='black', fontsize=20)  
     
-#    model = sm.OLS(y, x[:len(y),None])
-#    rst = model.fit()
-#    print(rst.f_test("x1 = 1"))     
+    model = sm.OLS(y, x[:len(y),None])
+    rst = model.fit()
+    print(rst.f_test("x1 = 1"))     
 
-    plt.plot([0, m],[0, m], color='black', linestyle='--')      
+    plt.plot([0, 1],[0, m], color='black', linestyle='--')      
     ax.tick_params(axis='both', which='major', labelsize=16)   
     ax.xaxis.set_ticks_position('bottom')
-    ax.yaxis.set_ticks_position('both')      
+    ax.yaxis.set_ticks_position('both')        
     
     plt.text(0.410, 0.065, methodnames[pairx], fontsize=18, rotation=0) 
     if nplot < 3:
@@ -107,13 +105,12 @@ for pair in pairs:
     else:
         plt.text(0.055, 0.77, methodnames[pairy], fontsize=18, rotation=90) 
         
-    if nplot in [1, 3]:
+    if nplot in [3, 4]:
         plt.xlabel('AUC', fontsize=18)        
     if nplot in [1, 3]:
         plt.ylabel('AUC', fontsize=18)
     
     nplot = nplot+1
-
     
 plt.savefig('figures/braininvaders-scatterplot.png', format='png')    
 plt.savefig('figures/braininvaders-scatterplot.eps', format='eps')    

@@ -29,7 +29,12 @@ from collections import OrderedDict
 from utilities.dim_reduction import RDR
 from pyriemann.estimation import Covariances
 
-for subject in range(1,48):
+nsubjects = 48
+nt = []
+
+for subject in range(1,nsubjects+1):
+    
+    print 'subject ' + str(subject)
 
     paramspath = './parameters/braininvaders.yaml'
     pipesdir   = './pipelines/braininvaders/' 
@@ -40,11 +45,23 @@ for subject in range(1,48):
     data_params['subject'] = subject
                
     X,y = get_data(data_params)  
-    ntrials = 120
-    select = np.random.randint(0, X.shape[0], size=ntrials)
-    X = X[select]
-    y = y[select]
     
+    select = y == 1
+    X1, y1 = X[select], y[select]
+    nt1 = X1.shape[0]
+    select = np.random.choice(nt1, size=150, replace=False)
+    X1, y1 = X1[select], y1[select]
+    
+    select = y == 2
+    X2, y2 = X[select], y[select]   
+    nt2 = X2.shape[0]
+    select = np.random.choice(nt2, size=30, replace=False)
+    X2, y2 = X2[select], y2[select]    
+    
+    select = np.random.choice(180, 180, replace=False)
+    X = np.concatenate((X1,X2))[select]
+    y = np.concatenate((y1,y2))[select]
+
     pipelines = OrderedDict()
     pipepaths = sorted(glob.glob(pipesdir + 'pipeline_*'))
     
@@ -68,3 +85,12 @@ for subject in range(1,48):
         rstpath = string.join([rstpath.split('.')[0]] + ['pkl'], '.')        
         rstpath = resultsdir + rstpath        
         joblib.dump(score, rstpath)  
+        
+        
+        
+        
+        
+        
+        
+        
+        

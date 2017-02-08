@@ -54,7 +54,7 @@ from sklearn import linear_model
 
 pairs = [[0,1], [0,2], [0,3], [0,4]]
 
-methodnames = ['MDM','HRD + MDM','PCA + MDM','RME + MDM','bm-RME + MDM']
+methodnames = ['MDM','HRD + MDM','PCA + MDM','RME + MDM','bmRME + MDM']
 
 plt.figure(figsize=(8,8))
 plt.subplots_adjust(wspace=0.025, hspace=0.025)
@@ -67,7 +67,8 @@ for pair in pairs:
     x = results_pair[results_pair.Method == method_pair[0]].Accuracy
     y = results_pair[results_pair.Method == method_pair[1]].Accuracy                    
 
-    ax = plt.subplot(2,2,nplot)                                  
+    ax = plt.subplot(2,2,nplot)    
+    plt.fill_between([0,1],[0,1], color="gray", linewidth=0.0, alpha=0.125)                                                                                             
     for px,py in zip(x,y):
         plt.scatter(px,py,color='black')
   
@@ -89,11 +90,11 @@ for pair in pairs:
     plt.text(0.20,0.89,r'$\hat{m} = ' + '{:.4f}'.format(m) + '$', 
              color='black', fontsize=20)  
     
-#    model = sm.OLS(y, x[:len(y),None])
-#    rst = model.fit()
-#    print(rst.f_test("x1 = 1"))     
+    model = sm.OLS(y, x[:len(y),None])
+    rst = model.fit()
+    print(rst.f_test("x1 = 1"))     
 
-    plt.plot([0, m],[0, m], color='black', linestyle='--')      
+    plt.plot([0, 1],[0, m], color='black', linestyle='--')      
     ax.tick_params(axis='both', which='major', labelsize=16)   
     ax.xaxis.set_ticks_position('bottom')
     ax.yaxis.set_ticks_position('both')      
@@ -111,7 +112,9 @@ for pair in pairs:
     
     nplot = nplot+1
     
-plt.savefig('results-scatterplot.png', format='png')    
+plt.savefig('figures/physionet-scatterplot.png', format='png')    
+plt.savefig('figures/physionet-scatterplot.eps', format='eps')       
+plt.savefig('figures/physionet-scatterplot.pdf', format='pdf')    
 
 #%%
 
