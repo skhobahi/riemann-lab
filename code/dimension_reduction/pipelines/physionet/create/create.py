@@ -13,7 +13,7 @@ def create_hrd_uns(P):
              "        - RDR\n\n",
              "pipeline:\n",
              "    - Covariances:\n"
-             "        estimator: 'oas'\n",        
+             "        estimator: 'lwf'\n",        
              "    - RDR:\n",
              ncomponents,
              "        method: 'harandi-uns'\n",
@@ -27,7 +27,7 @@ def create_hrd_uns(P):
 def create_hrd_sup(P):    
     
     ncomponents = "        n_components: " + str(P) + "\n"      
-    label       = "label: 'hrd-uns (" + str(P) +  ") + mdm'"
+    label       = "label: 'hrd-sup (" + str(P) +  ") + mdm'"
     
     lines = ["imports:\n",
              "    pyriemann.estimation:\n",
@@ -38,14 +38,14 @@ def create_hrd_sup(P):
              "        - RDR\n\n",
              "pipeline:\n",
              "    - Covariances:\n"
-             "        estimator: 'oas'\n",        
+             "        estimator: 'lwf'\n",        
              "    - RDR:\n",
              ncomponents,
              "        method: 'harandi-sup'\n",
              "        params:\n",
-             "          nw: 22\n"
-             "          nb: 13\n"
-             "          approx: False\n"             
+             "          nw: 20\n"
+             "          nb:  8\n"
+             "          approx: True\n"             
              "    - MDM:\n",
              "        metric: 'riemann'\n\n",         
              label
@@ -67,7 +67,7 @@ def create_mmx(P):
              "        - RDR\n\n",
              "pipeline:\n",
              "    - Covariances:\n"
-             "        estimator: 'oas'\n",        
+             "        estimator: 'lwf'\n",        
              "    - RDR:\n",
              ncomponents,
              "        method: 'minmax'\n",
@@ -94,7 +94,7 @@ def create_nrme(P):
              "        - RDR\n\n",
              "pipeline:\n",
              "    - Covariances:\n"
-             "        estimator: 'oas'\n",        
+             "        estimator: 'lwf'\n",        
              "    - RDR:\n",
              ncomponents,
              "        method: 'nrme'\n",                        
@@ -119,7 +119,7 @@ def create_covpca(P):
              "        - RDR\n\n",
              "pipeline:\n",
              "    - Covariances:\n"
-             "        estimator: 'oas'\n",        
+             "        estimator: 'lwf'\n",        
              "    - RDR:\n",
              ncomponents,
              "        method: 'covpca'\n",                        
@@ -144,7 +144,7 @@ def create_csp(P):
              "        - CSP\n\n",
              "pipeline:\n",
              "    - Covariances:\n"
-             "        estimator: 'oas'\n",        
+             "        estimator: 'lwf'\n",        
              "    - CSP:\n",
              ncomponents,
              "        log: False\n",                        
@@ -156,25 +156,17 @@ def create_csp(P):
     return lines    
          
 P  = [4,8,12,16,20,24,28,32,36]
-for Pi in P:
-     
-    filename = 'pipeline_2_hrd-uns_p' + "{0:02d}".format(Pi) + '_mdm.yaml'
-    f = open(filename, 'w') 
-    for line in create_hrd_uns(Pi):
-        f.write(line)   
-    f.close()  
+for Pi in P: 
 
-    filename = 'pipeline_3_hrd-sup_p' + "{0:02d}".format(Pi) + '_mdm.yaml'
+    filename = 'pipeline_6_hrd-sup_p' + "{0:02d}".format(Pi) + '_mdm.yaml'
     f = open(filename, 'w') 
     for line in create_hrd_sup(Pi):
         f.write(line)   
     f.close()       
                
-    filename = 'pipeline_4_covpca_p' + "{0:02d}".format(Pi) + '_mdm.yaml'
-    f = open(filename, 'w') 
-    for line in create_covpca(Pi):
-        f.write(line)   
-    f.close() 
+
+
+    
     
         
 

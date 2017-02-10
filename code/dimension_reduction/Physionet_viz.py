@@ -33,6 +33,8 @@ acc = []
 subject = []
 
 nsubjects = 109
+nmethods  = 28
+
 for subj in range(1,nsubjects+1):
     rstpaths = resultsdir + 'subject' + str(subj) + '/'
     rstpaths = sorted(glob.glob(rstpaths + '*'))
@@ -45,16 +47,54 @@ for subj in range(1,nsubjects+1):
 results = pd.DataFrame(data=acc, columns=['Accuracy'])
 results['Method']  = method
 results['Subject'] = subject       
-methods = method[:5]
-       
+methods = method[:28]
+
+nsubj = len(subject)/nmethods
+dims = []           
+for _ in range(nsubj):           
+    dims_ = [64]
+    for _ in range(3):
+        dims_ = dims_ + range(4,40,4)
+    dims = dims + dims_    
+results['Dim'] = dims   
+ 
+#%%    
+
+methodnames = ['hrd-uns', 'hrd-sup','covpca']
+pvalues = range(4,40,4)
+
+fig = plt.figure()
+for meth in methodnames:
+    acc = []
+    for subject in np.unique(results.Subject):
+        rst = results[results.Method.str.contains(meth)]
+        rst = rst[rst.Subject == subject]
+        acc.append(rst.Accuracy)
+    accmean = np.mean(np.stack(acc, axis=0), axis=0)
+    plt.plot(pvalues, accmean, linewidth=2.0, label=meth)
+
+accfull = np.mean(results[results.Method == 'mdm'].Accuracy)
+plt.plot([4, 36], [accfull, accfull], linestyle='--', color='black', label='full')
+
+plt.ylim(0.55,0.71)    
+plt.xlim(pvalues[0], pvalues[-1])
+plt.legend(loc="center right", bbox_to_anchor=(1.30,accfull))
+plt.xlabel(r"reduced dimension")
+plt.ylabel("accuracy")
+
+plt.xticks(pvalues)
+
+
 #%%
 
 import statsmodels.api as sm
 from sklearn import linear_model
 
-pairs = [[0,1], [0,2], [0,3], [0,4]]
+p = 4
+resultsp = results[(results.Dim == p) | (results.Dim == 64)]
+pairs = [[0,1], [0,2], [0,3]]
 
-methodnames = ['MDM','HRD + MDM','PCA + MDM','RME + MDM','bmRME + MDM']
+methodnames = ['mdm', 'hrd-uns', 'hrd-sup', 'covpca']
 
 plt.figure(figsize=(8,8))
 plt.subplots_adjust(wspace=0.025, hspace=0.025)
@@ -62,10 +102,13 @@ nplot = 1
 for pair in pairs:    
     pairx,pairy = pair
 
-    method_pair  = [methods[pairx], methods[pairy]]
-    results_pair = results[results.Method.isin(method_pair)]
-    x = results_pair[results_pair.Method == method_pair[0]].Accuracy
-    y = results_pair[results_pair.Method == method_pair[1]].Accuracy                    
+    method_pair  = [methodnames[pairx], methodnames[pairy]]
+
+    results_x = resultsp[resultsp.Method == 'mdm']
+    x = results_x.Accuracy
+                    
+    results_y = resultsp[resultsp.Method.str.contains(method_pair[1])]
+    y = results_y.Accuracy    
 
     ax = plt.subplot(2,2,nplot)    
     plt.fill_between([0,1],[0,1], color="gray", linewidth=0.0, alpha=0.125)                                                                                             
@@ -86,13 +129,13 @@ for pair in pairs:
     lm = linear_model.LinearRegression(fit_intercept=False)
     model_ransac = linear_model.RANSACRegressor(lm)
     model_ransac.fit(x[:len(y),None], y)        
-    m = model_ransac.estimator_.coef_[0]   
+    m = model_ransac.estimator_.coef_[0]       
     plt.text(0.20,0.89,r'$\hat{m} = ' + '{:.4f}'.format(m) + '$', 
              color='black', fontsize=20)  
     
-    model = sm.OLS(y, x[:len(y),None])
-    rst = model.fit()
-    print(rst.f_test("x1 = 1"))     
+#    model = sm.OLS(y, x[:len(y),None])
+#    rst = model.fit()
+#    print(rst.f_test("x1 = 1"))     
 
     plt.plot([0, 1],[0, m], color='black', linestyle='--')      
     ax.tick_params(axis='both', which='major', labelsize=16)   
@@ -101,7 +144,7 @@ for pair in pairs:
     
     plt.text(0.410, 0.065, methodnames[pairx], fontsize=18, rotation=0) 
     if nplot < 4:
-        plt.text(0.055, 0.70, methodnames[pairy], fontsize=18, rotation=90) 
+        plt.text(0.055, 0.60, methodnames[pairy], fontsize=18, rotation=90) 
     else:
         plt.text(0.055, 0.77, methodnames[pairy], fontsize=18, rotation=90) 
         

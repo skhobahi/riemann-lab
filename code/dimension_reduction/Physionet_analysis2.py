@@ -18,5 +18,5 @@ pipesdir   = './pipelines/physionet/'
 resultsdir = './results/physionet/' 
 
 nsubjects = 109
-for subject in range(1,50+1):
-    analyse_subject(subject, paramspath, pipesdir, resultsdir)
+for subject in range(51,nsubjects+1):
+   analyse_subject(subject, paramspath, pipesdir, resultsdir)

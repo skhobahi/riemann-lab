@@ -8,15 +8,15 @@ imports:
 
 pipeline:
     - Covariances:
-        estimator: 'oas'
+        estimator: 'lwf'
     - RDR:
-        n_components: 32
+        n_components: 36
         method: 'harandi-sup'
         params:
-          nw: 22
-          nb: 13
-          approx: False
+          nw: 20
+          nb:  8
+          approx: True
     - MDM:
         metric: 'riemann'
 
-label: 'hrd-uns (32) + mdm'
+label: 'hrd-sup (36) + mdm'

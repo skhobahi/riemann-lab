@@ -8,11 +8,15 @@ imports:
 
 pipeline:
     - Covariances:
-        estimator: 'oas'
+        estimator: 'lwf'
     - RDR:
-        n_components: 16
-        method: 'covpca'
+        n_components: 4
+        method: 'harandi-sup'
+        params:
+          nw: 20
+          nb:  8
+          approx: True
     - MDM:
         metric: 'riemann'
 
-label: 'covpca (16) + mdm'
+label: 'hrd-sup (4) + mdm'
