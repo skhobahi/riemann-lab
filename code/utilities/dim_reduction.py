@@ -7,6 +7,7 @@ Created on Mon Nov 14 17:36:59 2016
 """
 
 import numpy as np
+import scipy as sp
 from sklearn.decomposition import PCA
 from sklearn.base import BaseEstimator, TransformerMixin
 
@@ -61,7 +62,8 @@ class RDR(BaseEstimator, TransformerMixin):
     def _fit(self, X, y):   
              
         methods = {
-                   'nrme'        : dim_reduction_nrme_cgd,
+                   'nrme-uns'    : dim_reduction_nrmeuns,
+                   'nrme-sup'    : dim_reduction_nrmesup,
                    'harandi-uns' : dim_reduction_harandiuns,
                    'harandi-sup' : dim_reduction_harandisup,
                    'minmax'      : dim_reduction_minmax,    
@@ -83,7 +85,7 @@ class RDR(BaseEstimator, TransformerMixin):
             Xnew[k, :, :] = np.dot(W.T, np.dot(X[k, :, :], W))                        
         return Xnew          
     
-def dim_reduction_nrme_cgd(X, P, labels, params):
+def dim_reduction_nrmeuns(X, P, labels, params):
     
     K = X.shape[0]
     nc = X.shape[1]    
@@ -106,6 +108,35 @@ def dim_reduction_nrme_cgd(X, P, labels, params):
 
     return W       
 
+def dim_reduction_nrmesup(X, P, labels, params):
+    
+    K  = X.shape[0]
+    nc = X.shape[1]    
+    
+    Sw = np.zeros((nc,nc))
+    Sb = np.zeros((nc,nc))
+    for i in range(K):
+        ci = labels[i]
+        for j in range(K):
+            Ci, Cj = X[i,:,:], X[j,:,:]         
+            Sij = np.dot(invsqrtm(Ci), np.dot(Cj, invsqrtm(Ci)))          
+            if (i != j) & (labels[j] == ci):            
+                Sw  = Sw + powm(logm(Sij), 2)
+            if (i != j) & (labels[j] != ci):             
+                Sb  = Sb + powm(logm(Sij), 2)            
+    
+    M = np.dot(np.linalg.inv(Sw),Sb)
+    g,U = np.linalg.eig(M)        
+    
+    idx = g.argsort()[::-1]
+    g = g[idx]
+    U = U[:,idx]
+    
+    B,p = sp.linalg.polar(U)
+    W = B[:,:P]   
+    
+    return W
+
 def dim_reduction_bootstrap_means(X, P, labels, params):
 
     nc = X.shape[1] 
@@ -120,7 +151,7 @@ def dim_reduction_bootstrap_means(X, P, labels, params):
         selectmeans = [randrange(0, K) for _ in range(npoints)]
         Xm[n] = mean_riemann(X[selectmeans])        
            
-    W = dim_reduction_nrme_cgd(Xm, P, labels, params)
+    W = dim_reduction_nrmeuns(Xm, P, labels, params)
 
     return W     
 

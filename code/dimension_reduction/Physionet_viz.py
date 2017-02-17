@@ -28,13 +28,13 @@ paramspath = './parameters/physionet.yaml'
 pipesdir   = './pipelines/physionet/' 
 resultsdir = './results/physionet/' 
 
-method = []
-acc = []
+method  = []
+acc     = []
 subject = []
+dims    = []
+times   = []
 
 nsubjects = 109
-nmethods  = 28
-
 for subj in range(1,nsubjects+1):
     rstpaths = resultsdir + 'subject' + str(subj) + '/'
     rstpaths = sorted(glob.glob(rstpaths + '*'))
@@ -43,24 +43,23 @@ for subj in range(1,nsubjects+1):
         method.append(scores['label'])
         acc.append(scores['acc'])
         subject.append(subj)
+        times.append(scores['tfit'])
+        
+        dim = rstpath.split("_")[-2][1:]
+        if dim == '':
+            dims.append(64)
+        else:            
+            dims.append(int(rstpath.split("_")[-2][1:]))
         
 results = pd.DataFrame(data=acc, columns=['Accuracy'])
 results['Method']  = method
-results['Subject'] = subject       
-methods = method[:28]
-
-nsubj = len(subject)/nmethods
-dims = []           
-for _ in range(nsubj):           
-    dims_ = [64]
-    for _ in range(3):
-        dims_ = dims_ + range(4,40,4)
-    dims = dims + dims_    
-results['Dim'] = dims   
- 
+results['Subject'] = subject         
+results['Dim']     = dims  
+results['Times']   = times       
+       
 #%%    
 
-methodnames = ['hrd-uns', 'hrd-sup','covpca']
+methodnames = ['hrd-uns', 'minmax','covpca', 'csp', 'hrd-sup']
 pvalues = range(4,40,4)
 
 fig = plt.figure()
@@ -74,7 +73,8 @@ for meth in methodnames:
     plt.plot(pvalues, accmean, linewidth=2.0, label=meth)
 
 accfull = np.mean(results[results.Method == 'mdm'].Accuracy)
-plt.plot([4, 36], [accfull, accfull], linestyle='--', color='black', label='full')
+plt.plot([4, 36], [accfull, accfull], 
+         linestyle='--', color='black', label='full')
 
 plt.ylim(0.55,0.71)    
 plt.xlim(pvalues[0], pvalues[-1])
@@ -90,11 +90,16 @@ plt.xticks(pvalues)
 import statsmodels.api as sm
 from sklearn import linear_model
 
-p = 4
+p = 24
 resultsp = results[(results.Dim == p) | (results.Dim == 64)]
-pairs = [[0,1], [0,2], [0,3]]
 
-methodnames = ['mdm', 'hrd-uns', 'hrd-sup', 'covpca']
+#methodnames = ['mdm', 'hrd-uns', 'minmax', 'covpca', 'hrd-sup']
+#pairs = [[0,1], [0,2], [0,3], [0,4]]
+
+methodnames = ['mdm', 'nrme-uns', 'nrme-sup', 'csp']
+methodlabel = ['MDM', 'unsRME + MDM', 'supRME + MDM', 'CSP + MDM']
+pairs = [[0,1], [0,2], [0,3], [1,2]]
+
 
 plt.figure(figsize=(8,8))
 plt.subplots_adjust(wspace=0.025, hspace=0.025)
@@ -130,23 +135,29 @@ for pair in pairs:
     model_ransac = linear_model.RANSACRegressor(lm)
     model_ransac.fit(x[:len(y),None], y)        
     m = model_ransac.estimator_.coef_[0]       
-    plt.text(0.20,0.89,r'$\hat{m} = ' + '{:.4f}'.format(m) + '$', 
+    plt.text(0.27,0.89,r'$\hat{m} = ' + '{:.3f}'.format(m) + '$', 
              color='black', fontsize=20)  
     
-#    model = sm.OLS(y, x[:len(y),None])
-#    rst = model.fit()
-#    print(rst.f_test("x1 = 1"))     
+    model = sm.OLS(y, x[:len(y),None])
+    rst = model.fit()
+    print methodnames[pairy] + ' vs ' + methodnames[pairx]
+    print(rst.f_test("x1 = 1"))  
+    print ''
 
     plt.plot([0, 1],[0, m], color='black', linestyle='--')      
     ax.tick_params(axis='both', which='major', labelsize=16)   
     ax.xaxis.set_ticks_position('bottom')
     ax.yaxis.set_ticks_position('both')      
     
-    plt.text(0.410, 0.065, methodnames[pairx], fontsize=18, rotation=0) 
-    if nplot < 4:
-        plt.text(0.055, 0.60, methodnames[pairy], fontsize=18, rotation=90) 
-    else:
-        plt.text(0.055, 0.77, methodnames[pairy], fontsize=18, rotation=90) 
+    if nplot in [1, 2]:
+        plt.text(0.410, 0.065, methodlabel[pairx], fontsize=18, rotation=0) 
+        plt.text(0.055, 0.80, methodlabel[pairy], fontsize=18, rotation=90)     
+    if nplot in [3]:
+        plt.text(0.410, 0.065, methodlabel[pairx], fontsize=18, rotation=0)         
+        plt.text(0.055, 0.70, methodlabel[pairy], fontsize=18, rotation=90)    
+    if nplot in [4]:
+        plt.text(0.270, 0.065, methodlabel[pairx], fontsize=18, rotation=0)         
+        plt.text(0.055, 0.80, methodlabel[pairy], fontsize=18, rotation=90)         
         
     if nplot > 2:
         plt.xlabel('accuracy', fontsize=18)        
@@ -160,6 +171,17 @@ plt.savefig('figures/physionet-scatterplot.eps', format='eps')
 plt.savefig('figures/physionet-scatterplot.pdf', format='pdf')    
 
 #%%
+ 
+uns = results[results.Method.str.contains('nrme-uns')]
+uns = uns.groupby(by='Method').mean()[['Accuracy','Dim']].sort_values(by='Dim')
+sup = results[results.Method.str.contains('nrme-sup')]
+sup = sup.groupby(by='Method').mean()[['Accuracy','Dim']].sort_values(by='Dim')
+
+plt.plot(uns.Dim, uns.Accuracy, color='b', linewidth=2.0)
+plt.plot(sup.Dim, sup.Accuracy, color='r', linewidth=2.0)
+
+
+
 
 
 

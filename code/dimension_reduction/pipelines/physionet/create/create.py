@@ -13,7 +13,7 @@ def create_hrd_uns(P):
              "        - RDR\n\n",
              "pipeline:\n",
              "    - Covariances:\n"
-             "        estimator: 'lwf'\n",        
+             "        estimator: 'oas'\n",        
              "    - RDR:\n",
              ncomponents,
              "        method: 'harandi-uns'\n",
@@ -38,14 +38,14 @@ def create_hrd_sup(P):
              "        - RDR\n\n",
              "pipeline:\n",
              "    - Covariances:\n"
-             "        estimator: 'lwf'\n",        
+             "        estimator: 'oas'\n",        
              "    - RDR:\n",
              ncomponents,
              "        method: 'harandi-sup'\n",
              "        params:\n",
              "          nw: 20\n"
              "          nb:  8\n"
-             "          approx: True\n"             
+             "          approx: False\n"             
              "    - MDM:\n",
              "        metric: 'riemann'\n\n",         
              label
@@ -67,7 +67,7 @@ def create_mmx(P):
              "        - RDR\n\n",
              "pipeline:\n",
              "    - Covariances:\n"
-             "        estimator: 'lwf'\n",        
+             "        estimator: 'oas'\n",        
              "    - RDR:\n",
              ncomponents,
              "        method: 'minmax'\n",
@@ -80,10 +80,10 @@ def create_mmx(P):
              
     return lines 
 
-def create_nrme(P):
+def create_nrme_uns(P):
     
     ncomponents = "        n_components: " + str(P) + "\n"  
-    label       = "label: 'nrme (" + str(P) + ") + mdm'"               
+    label       = "label: 'nrme-uns (" + str(P) + ") + mdm'"               
     
     lines = ["imports:\n",
              "    pyriemann.estimation:\n",
@@ -94,16 +94,41 @@ def create_nrme(P):
              "        - RDR\n\n",
              "pipeline:\n",
              "    - Covariances:\n"
-             "        estimator: 'lwf'\n",        
+             "        estimator: 'oas'\n",        
              "    - RDR:\n",
              ncomponents,
-             "        method: 'nrme'\n",                        
+             "        method: 'nrme-uns'\n",                        
              "    - MDM:\n",
              "        metric: 'riemann'\n\n",         
              label
              ]     
              
     return lines    
+
+def create_nrme_sup(P):
+    
+    ncomponents = "        n_components: " + str(P) + "\n"  
+    label       = "label: 'nrme-sup (" + str(P) + ") + mdm'"               
+    
+    lines = ["imports:\n",
+             "    pyriemann.estimation:\n",
+             "        - Covariances\n",
+             "    pyriemann.classification:\n",
+             "        - MDM\n",
+             "    utilities.dim_reduction:\n",
+             "        - RDR\n\n",
+             "pipeline:\n",
+             "    - Covariances:\n"
+             "        estimator: 'oas'\n",        
+             "    - RDR:\n",
+             ncomponents,
+             "        method: 'nrme-sup'\n",                        
+             "    - MDM:\n",
+             "        metric: 'riemann'\n\n",         
+             label
+             ]     
+             
+    return lines     
 
 def create_covpca(P):
     
@@ -119,7 +144,7 @@ def create_covpca(P):
              "        - RDR\n\n",
              "pipeline:\n",
              "    - Covariances:\n"
-             "        estimator: 'lwf'\n",        
+             "        estimator: 'oas'\n",        
              "    - RDR:\n",
              ncomponents,
              "        method: 'covpca'\n",                        
@@ -144,7 +169,7 @@ def create_csp(P):
              "        - CSP\n\n",
              "pipeline:\n",
              "    - Covariances:\n"
-             "        estimator: 'lwf'\n",        
+             "        estimator: 'oas'\n",        
              "    - CSP:\n",
              ncomponents,
              "        log: False\n",                        
@@ -158,11 +183,17 @@ def create_csp(P):
 P  = [4,8,12,16,20,24,28,32,36]
 for Pi in P: 
 
-    filename = 'pipeline_6_hrd-sup_p' + "{0:02d}".format(Pi) + '_mdm.yaml'
+    filename = 'pipeline_7_nrme-uns_p' + "{0:02d}".format(Pi) + '_mdm.yaml'
     f = open(filename, 'w') 
-    for line in create_hrd_sup(Pi):
+    for line in create_nrme_uns(Pi):
         f.write(line)   
-    f.close()       
+    f.close()  
+
+    filename = 'pipeline_8_nrme-sup_p' + "{0:02d}".format(Pi) + '_mdm.yaml'
+    f = open(filename, 'w') 
+    for line in create_nrme_sup(Pi):
+        f.write(line)   
+    f.close()           
                
 
 
