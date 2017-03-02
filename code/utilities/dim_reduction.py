@@ -38,7 +38,8 @@ class RDR(BaseEstimator, TransformerMixin):
         Which method should be used to reduce the dimension of the dataset.
         Different approaches use different cost functions and algorithms for
         solving the optimization problem. The options are:        
-            - nrme                       
+            - nrme-uns
+            - nrme-sup                       
             - harandi-uns
             - harandi-sup (set nw, nb, approx)              
             - minmax (set alpha)      
@@ -68,7 +69,8 @@ class RDR(BaseEstimator, TransformerMixin):
                    'harandi-sup' : dim_reduction_harandisup,
                    'minmax'      : dim_reduction_minmax,    
                    'covpca'      : dim_reduction_covpca,
-                   'bootstrap'   : dim_reduction_bootstrap_means
+                   'bootstrap'   : dim_reduction_bootstrap_means,
+                   'nrme-lnd'    : dim_reduction_nrmelandmark
                   }    
                                    
         self.projector_ = methods[self.method](X=X,
@@ -84,6 +86,27 @@ class RDR(BaseEstimator, TransformerMixin):
         for k in range(K):            
             Xnew[k, :, :] = np.dot(W.T, np.dot(X[k, :, :], W))                        
         return Xnew          
+    
+def dim_reduction_nrmelandmark(X, P, labels, params):
+    
+    K = X.shape[0]
+    nc = X.shape[1]    
+    
+    S = np.zeros((nc,nc))                    
+    M = mean_riemann(X)                
+    for i in range(K):                          
+        Ci = X[i,:,:]         
+        Sij = np.dot(invsqrtm(Ci), np.dot(M, invsqrtm(Ci)))                
+        S = S + powm(logm(Sij), 2)                
+            
+    l,v = np.linalg.eig(S)
+    idx = l.argsort()[::-1]   
+    l = l[idx]
+    v = v[:, idx]
+
+    W = v[:, :P]    
+
+    return W     
     
 def dim_reduction_nrmeuns(X, P, labels, params):
     

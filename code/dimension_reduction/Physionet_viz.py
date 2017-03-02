@@ -93,12 +93,9 @@ from sklearn import linear_model
 p = 24
 resultsp = results[(results.Dim == p) | (results.Dim == 64)]
 
-#methodnames = ['mdm', 'hrd-uns', 'minmax', 'covpca', 'hrd-sup']
-#pairs = [[0,1], [0,2], [0,3], [0,4]]
-
-methodnames = ['mdm', 'nrme-uns', 'nrme-sup', 'csp']
-methodlabel = ['MDM', 'unsRME + MDM', 'supRME + MDM', 'CSP + MDM']
-pairs = [[0,1], [0,2], [0,3], [1,2]]
+methodnames = ['mdm', 'hrd-uns', 'nrme-uns', 'nrme-lnd']
+methodlabel = ['MDM', 'unsHRD + MDM', 'unsRME + MDM', 'lndRME + MDM']
+pairs = [[0,1], [0,2], [0,3], [1,3]]
 
 
 plt.figure(figsize=(8,8))
@@ -154,10 +151,10 @@ for pair in pairs:
         plt.text(0.055, 0.80, methodlabel[pairy], fontsize=18, rotation=90)     
     if nplot in [3]:
         plt.text(0.410, 0.065, methodlabel[pairx], fontsize=18, rotation=0)         
-        plt.text(0.055, 0.70, methodlabel[pairy], fontsize=18, rotation=90)    
+        plt.text(0.055, 0.81, methodlabel[pairy], fontsize=18, rotation=90)    
     if nplot in [4]:
         plt.text(0.270, 0.065, methodlabel[pairx], fontsize=18, rotation=0)         
-        plt.text(0.055, 0.80, methodlabel[pairy], fontsize=18, rotation=90)         
+        plt.text(0.055, 0.81, methodlabel[pairy], fontsize=18, rotation=90)         
         
     if nplot > 2:
         plt.xlabel('accuracy', fontsize=18)        
@@ -169,6 +166,20 @@ for pair in pairs:
 plt.savefig('figures/physionet-scatterplot.png', format='png')    
 plt.savefig('figures/physionet-scatterplot.eps', format='eps')       
 plt.savefig('figures/physionet-scatterplot.pdf', format='pdf')    
+
+#%%
+
+rme_lnd = results[results.Method.str.contains('nrme-lnd')]
+rme_lnd = rme_lnd.groupby(by='Method').mean()[['Times']].sort_values(by='Times')
+print rme_lnd
+
+rme_uns = results[results.Method.str.contains('nrme-uns')]
+rme_uns = rme_uns.groupby(by='Method').mean()[['Times']].sort_values(by='Times')
+print rme_uns
+
+hrd_uns = results[results.Method.str.contains('hrd-uns')]
+hrd_uns = hrd_uns.groupby(by='Method').mean()[['Times']].sort_values(by='Times')
+print hrd_uns
 
 #%%
  
