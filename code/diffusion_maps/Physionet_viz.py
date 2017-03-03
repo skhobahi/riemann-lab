@@ -6,6 +6,7 @@ Created on Tue Feb 28 17:50:43 2017
 @author: coelhorp
 """
 
+import os
 import matplotlib.pyplot as plt
 from colour import Color
 from sklearn.externals import joblib 
@@ -25,7 +26,7 @@ def figure_trajectory():
         u.append(embedding[0])
         l.append(embedding[1])
     
-    plt.figure(figsize=(15.1,14.61))
+    plt.figure(figsize=(15.1,14.61), facecolor='white')
     i_000 = 65  # beginning of the window of interest (at cue) 
     i_p08 = 135 # end of the window of interest (8s after cue)
     green = Color("green")
@@ -39,7 +40,14 @@ def figure_trajectory():
         nplot = nplot + 1
         plt.title('Subject ' + str(subj), fontsize=22)
         plt.scatter(ui[i_000,1], ui[i_000,2], color='g', s=250, marker='s')
-        plt.scatter(ui[i_p08,1], ui[i_p08,2], color='r', s=250, marker='s')     
+        plt.scatter(ui[i_p08,1], ui[i_p08,2], color='r', s=250, marker='s')   
+        
+    directory = './figures/Physionet/'        
+    if not os.path.exists(directory):
+        os.makedirs(directory)             
+    plt.savefig(directory + 'trajectories.eps' , format='eps')        
+    plt.savefig(directory + 'trajectories.png' , format='png')        
+    plt.savefig(directory + 'trajectories.pdf' , format='pdf')         
 
 def figure_twoclasses():
 
@@ -58,18 +66,25 @@ def figure_twoclasses():
         l.append(embedding[1])
         y.append(labels)
     
-    plt.figure(figsize=(15.1,14.61))
+    plt.figure(figsize=(15.1,14.61), facecolor='white')
     colors = ['r', 'b']    
     nplot = 1
     for subj,ui,yi in zip(subjects,u,y):    
         plt.subplot(2,2,nplot)      
         for i in range(len(ui)):
-            plt.scatter(ui[i,1], ui[i,2], color=colors[yi[i]-2], s=80)
+            plt.scatter(ui[i,1], ui[i,2], color=colors[yi[i]-2], s=120)
         nplot = nplot + 1
         plt.title('Subject ' + str(subj), fontsize=22)
+        
+    directory = './figures/Physionet/'        
+    if not os.path.exists(directory):
+        os.makedirs(directory)             
+    plt.savefig(directory + 'twoclasses.eps' , format='eps')        
+    plt.savefig(directory + 'twoclasses.png' , format='png')        
+    plt.savefig(directory + 'twoclasses.pdf' , format='pdf')          
 
-
-
+figure_trajectory()
+figure_twoclasses()
 
 
 

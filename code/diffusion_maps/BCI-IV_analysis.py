@@ -20,9 +20,6 @@ plt.rcParams['xtick.color']='k'
 plt.rcParams['ytick.color']='k'
 plt.rcParams['figure.facecolor'] = 'white'
 
-import sys
-sys.path.append('../../')
-
 from utilities.data_handler  import get_data
 from utilities.dim_reduction import RDR
 from utilities.diffusion_map import get_diffusionEmbedding
